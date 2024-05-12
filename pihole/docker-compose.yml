@@ -1,59 +1,59 @@
 services:
-  pihole:
-    container_name: pihole
-    image: pihole/pihole:latest
-    ports:
-      - 53:53/tcp
-      - 53:53/udp
-      - 67:67/udp
-      - 8083:80/tcp
-    environment:
-      TZ: ${TZ}
-      WEBPASSWORD: ${PASSWORD}
-      VIRTUAL_HOST: ${VIRTUAL_HOST}
-      PIHOLE_DNS_: 172.23.0.21#5053
-    volumes:
-      - ${VOLUME_PATH}/etc-pihole:/etc/pihole
-      - ${VOLUME_PATH}/etc-dnsmasq.d:/etc/dnsmasq.d
-    networks:
-      traefik-network:
-        ipv4_address: 172.23.0.20
-    cap_add:
-      - NET_ADMIN
-    restart: unless-stopped
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.pihole.rule=Host(`${SUB_DOMAIN}.${SERVER_DOMAIN}`)
-      - traefik.http.routers.pihole.entrypoints=websecure
-      - traefik.http.services.pihole.loadbalancer.server.port=80
-      - traefik.http.routers.pihole.middlewares=strip-prefix,add-prefix
-      - traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/admin
-      - traefik.http.middlewares.add-prefix.addprefix.prefix=/admin
-      - homepage.group=Infrastructure
-      - homepage.name=Pihole
-      - homepage.icon=pi-hole
-      - homepage.href=${URL_SCHEME}://${SUB_DOMAIN}.${SERVER_DOMAIN}
-      - homepage.description=DNS server
-      - homepage.widget.type=pihole
-      - homepage.widget.url=${URL_SCHEME}://${SUB_DOMAIN}.${SERVER_DOMAIN}
-      - homepage.widget.key=${API_KEY}
-      - homepage.widget.fields=["queries", "blocked", "blocked_percent", "gravity"]
+    pihole:
+        container_name: pihole
+        image: pihole/pihole:latest
+        ports:
+            - 53:53/tcp
+            - 53:53/udp
+            - 67:67/udp
+            - 8083:80/tcp
+        environment:
+            TZ: ${TZ}
+            WEBPASSWORD: ${PASSWORD}
+            VIRTUAL_HOST: ${VIRTUAL_HOST}
+            PIHOLE_DNS_: 172.18.0.21#5053
+        volumes:
+            - ${VOLUME_PATH}/etc-pihole:/etc/pihole
+            - ${VOLUME_PATH}/etc-dnsmasq.d:/etc/dnsmasq.d
+        networks:
+            homeserver:
+                ipv4_address: 172.18.0.20
+        cap_add:
+            - NET_ADMIN
+        restart: unless-stopped
+        labels:
+            # - traefik.enable=true
+            # - traefik.http.routers.pihole.rule=Host(`${SUB_DOMAIN}.${SERVER_DOMAIN}`)
+            # - traefik.http.routers.pihole.entrypoints=websecure
+            # - traefik.http.services.pihole.loadbalancer.server.port=80
+            # - traefik.http.routers.pihole.middlewares=strip-prefix,add-prefix
+            # - traefik.http.middlewares.strip-prefix.stripprefix.prefixes=/admin
+            # - traefik.http.middlewares.add-prefix.addprefix.prefix=/admin
+            - homepage.group=Infrastructure
+            - homepage.name=Pihole
+            - homepage.icon=pi-hole
+            - homepage.href=${URL_SCHEME}://${SUB_DOMAIN}.${SERVER_DOMAIN}
+            - homepage.description=DNS server
+            - homepage.widget.type=pihole
+            - homepage.widget.url=${URL_SCHEME}://${SUB_DOMAIN}.${SERVER_DOMAIN}
+            - homepage.widget.key=${API_KEY}
+            - homepage.widget.fields=["queries", "blocked", "blocked_percent", "gravity"]
 
-  unbound:
-    container_name: unbound
-    image: "mvance/unbound:latest"
-    networks:
-      traefik-network:
-        ipv4_address: 172.23.0.21
-    ports:
-      - "5053:53/tcp"
-      - "5053:53/udp"
-    volumes:
-      - ${VOLUME_PATH}/etc-unbound/forward-records.conf:/opt/unbound/etc/unbound/forward-records.conf
-      - ${VOLUME_PATH}/etc-unbound/a-records.conf:/opt/unbound/etc/unbound/a-records.conf
-      - ${VOLUME_PATH}/etc-unbound/unbound.conf:/opt/unbound/etc/unbound/unbound.conf
-    restart: unless-stopped
+    unbound:
+        container_name: unbound
+        image: "mvance/unbound:latest"
+        networks:
+            homeserver:
+                ipv4_address: 172.18.0.21
+        ports:
+            - "5053:53/tcp"
+            - "5053:53/udp"
+        volumes:
+            - ${VOLUME_PATH}/etc-unbound/forward-records.conf:/opt/unbound/etc/unbound/forward-records.conf
+            - ${VOLUME_PATH}/etc-unbound/a-records.conf:/opt/unbound/etc/unbound/a-records.conf
+            - ${VOLUME_PATH}/etc-unbound/unbound.conf:/opt/unbound/etc/unbound/unbound.conf
+        restart: unless-stopped
 
 networks:
-  traefik-network:
-    external: true
+    homeserver:
+        external: true

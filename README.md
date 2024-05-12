@@ -18,7 +18,7 @@ Even though being only used on your local network it uses ```https``` via a wild
 
 Run 
 ```
-docker network create traefik-network
+docker network create homeserver
 ./docker-compose.sh ACTIVE_SERVICES up -d
 ```
 
